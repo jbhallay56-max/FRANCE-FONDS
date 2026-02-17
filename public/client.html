@@ -139,7 +139,7 @@
   const loginAlert = document.getElementById('loginAlert');
 
   async function loadMe(){
-    const r = await fetch('/api/me');
+    const r = await fetch('/api/me', { credentials: 'include' });
     if(!r.ok) return null;
     const data = await r.json().catch(() => null);
     return data && data.user ? data.user : null;
