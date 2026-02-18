@@ -1,51 +1,103 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Espace Client — FRANCE</title>
-  <link rel="stylesheet" href="/style.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>FRANCE — Espace client</title>
+  <link rel="stylesheet" href="/style.css"/>
 </head>
+
 <body>
+  <main class="wrap">
+    <header class="top">
+      <a class="brand" href="/index.html">FRANCE</a>
+      <nav class="nav">
+        <a href="/index.html">Accueil</a>
+        <a href="/marche.html">Marché & chiffres</a>
+      </nav>
+    </header>
 
-<h1>Espace Client</h1>
+    <section class="card">
+      <h1>Espace client</h1>
+      <p class="muted">Suivi — allocation, décisions, risques, justification. (Prototype)</p>
 
-<div id="state">Chargement...</div>
+      <div id="state" class="muted">Chargement…</div>
 
-<button id="logout">Logout</button>
+      <div id="box" style="display:none">
+        <div class="grid">
+          <div class="row between">
+            <div>
+              <div class="tiny muted">Nom</div>
+              <div id="name" class="big">—</div>
+            </div>
+            <button id="logout" class="btn">Se déconnecter</button>
+          </div>
 
-<script>
-async function load(){
+          <div class="sep"></div>
 
-  try{
-    const r = await fetch("/api/me", { credentials: "include" });
-    const data = await r.json();
+          <div class="row">
+            <div style="flex:1">
+              <div class="tiny muted">Email</div>
+              <div id="mail">—</div>
+            </div>
+          </div>
 
-    if(!r.ok) throw new Error(data.error);
+          <div class="row">
+            <div style="flex:1">
+              <div class="tiny muted">Adresse</div>
+              <div id="addr">—</div>
+            </div>
+          </div>
 
-    document.getElementById("state").textContent =
-      "Bienvenue " + data.user.email;
+          <div class="row">
+            <div style="flex:1">
+              <div class="tiny muted">Téléphone</div>
+              <div id="phone">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-  } catch(e){
-    document.getElementById("state").textContent =
-      "Session expirée";
+  <script>
+  async function loadMe(){
+    const state = document.getElementById("state");
+    const box   = document.getElementById("box");
 
-    setTimeout(() => {
-      window.location.href = "/login.html";
-    }, 800);
+    const nameEl  = document.getElementById("name");
+    const mailEl  = document.getElementById("mail");
+    const addrEl  = document.getElementById("addr");
+    const phoneEl = document.getElementById("phone");
+    const logoutBtn = document.getElementById("logout");
+
+    try{
+      const r = await fetch("/api/me", { credentials: "include" });
+      const data = await r.json().catch(() => ({}));
+      if(!r.ok) throw new Error(data.error || "Not authenticated");
+
+      // OK
+      if(state) state.style.display = "none";
+      if(box) box.style.display = "block";
+
+      const u = data.user || {};
+      nameEl.textContent  = (u.first_name ? (u.first_name + " ") : "") + (u.last_name || "");
+      mailEl.textContent  = u.email || "—";
+      addrEl.textContent  = (u.address || "—") + (u.postal ? (" — " + u.postal) : "");
+      phoneEl.textContent = u.phone || "—";
+
+      logoutBtn.addEventListener("click", async () => {
+        await fetch("/api/logout", { method:"POST", credentials:"include" });
+        window.location.href = "/login.html";
+      });
+
+    } catch(e){
+      if(state) state.textContent = "Session expirée. Redirection…";
+      setTimeout(() => { window.location.href = "/login.html"; }, 600);
+    }
   }
-}
 
-document.getElementById("logout").addEventListener("click", async () => {
-  await fetch("/api/logout", {
-    method: "POST",
-    credentials: "include"
-  });
-
-  window.location.href = "/login.html";
-});
-
-load();
-</script>
-
+  document.addEventListener("DOMContentLoaded", loadMe);
+  </script>
 </body>
 </html>
