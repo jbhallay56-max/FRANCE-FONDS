@@ -1,1 +1,26 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Connexion — FRANCE</title><link rel="stylesheet" href="/styles.css"/></head><body><div class="container"><h1>Connexion</h1><p>Prototype fonctionnel : comptes réels (SQLite), mot de passe hashé, cookie JWT.</p><div class="card"><label>Email</label><input id="email" class="input" type="email"/><label style="margin-top:10px;">Mot de passe</label><input id="password" class="input" type="password"/><button id="btn" class="btn" style="margin-top:12px;">Se connecter</button><div id="a" class="alert"></div><div style="margin-top:14px;"><a class="btn ghost" href="/signup.html">Créer un compte</a><button id="forgot" class="btn ghost" style="float:right;">Mot de passe oublié</button></div><div id="resetlink" class="alert ok"></div></div></div><script src="/auth.js"></script><script>const {api,setAlert}=window.FRANCE_AUTH;btn.onclick=async()=>{try{setAlert(a,'');await api('/api/login',{email:email.value,password:password.value});location.href='/client.html';}catch(e){setAlert(a,e.message,'err');}};forgot.onclick=async()=>{try{const r=await api('/api/forgot',{email:email.value});setAlert(resetlink,r.reset_link?('Lien: '+r.reset_link):'Si l’email existe, un lien a été généré.','ok');}catch(e){setAlert(resetlink,e.message,'err');}};</script></body></html>
+<script src="/auth.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+  const email = document.getElementById("email");
+  const password = document.getElementById("password");
+  const btn = document.getElementById("btn");
+  const alertBox = document.getElementById("a");
+
+  const { api, setAlert } = window.FRANCE_AUTH;
+
+  btn.addEventListener("click", async function(){
+    try{
+      setAlert(alertBox, "");
+      await api("/api/login", {
+        email: email.value,
+        password: password.value
+      });
+      window.location.href = "/client.html";
+    } catch(e){
+      setAlert(alertBox, e.message, "err");
+    }
+  });
+
+});
+</script>
