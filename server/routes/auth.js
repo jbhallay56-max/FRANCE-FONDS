@@ -55,7 +55,12 @@ authRouter.post("/login", async (req, res) => {
     if(!ok) return res.status(401).json({ error: "Invalid credentials" });
 
     const token = signToken({ uid: user.id, email: user.email });
-    res.cookie("auth", token, { httpOnly: true, sameSite: "lax", secure: false });
+    res.cookie("auth", token, {
+  httpOnly: true,
+  sameSite: "lax",
+  secure: true,
+  path: "/"
+});
     return res.json({ ok: true });
   } catch(e){
     console.error(e);
@@ -65,7 +70,7 @@ authRouter.post("/login", async (req, res) => {
 
 // Logout
 authRouter.post("/logout", async (req, res) => {
-  res.clearCookie("auth");
+  res.clearCookie("auth", { path: "/" });
   return res.json({ ok: true });
 });
 
