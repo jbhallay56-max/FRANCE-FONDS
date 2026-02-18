@@ -1,0 +1,41 @@
+<!doctype html><html lang="fr"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FRANCE — Connexion</title><link rel="stylesheet" href="/styles.css"/></head>
+<body><header data-nav></header>
+<main class="container">
+<section class="hero"><h1 class="h-title">Espace client</h1><p class="h-sub">Connexion sécurisée (cookie JWT). Compatible Render (HTTPS).</p></section>
+<section class="card">
+<div class="row">
+  <div><label class="muted">Email</label><input id="email" class="input" type="email" autocomplete="email"/></div>
+  <div><label class="muted">Mot de passe</label><input id="password" class="input" type="password" autocomplete="current-password"/></div>
+</div>
+<button id="btn" class="btn" style="margin-top:12px;">Se connecter</button>
+<div id="a" class="alert"></div>
+<hr/>
+<div class="muted">Pas de compte ? <a class="btn" href="/signup.html">Créer un compte</a></div>
+<hr/>
+<div class="muted">Mot de passe oublié ?
+  <button id="forgot" class="btn ghost" style="margin-left:8px;">Générer un lien</button>
+  <div id="resetlink" class="alert ok"></div>
+</div>
+</section></main>
+<footer data-footer></footer>
+<script src="/app.js"></script><script src="/auth.js"></script>
+<script>
+const { api, setAlert } = window.FRANCE_AUTH;
+document.getElementById("btn").onclick = async () => {
+  const el = document.getElementById("a");
+  try{
+    setAlert(el, "");
+    await api("/api/login", { email: email.value, password: password.value });
+    location.href = "/client.html";
+  }catch(e){ setAlert(el, e.message, "err"); }
+};
+document.getElementById("forgot").onclick = async () => {
+  const out = document.getElementById("resetlink");
+  try{
+    const r = await api("/api/forgot", { email: email.value });
+    setAlert(out, r.reset_link ? ("Lien: " + r.reset_link) : "Si l’email existe, un lien a été généré.", "ok");
+  }catch(e){ setAlert(out, e.message, "err"); }
+};
+</script></body></html>
