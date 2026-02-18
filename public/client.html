@@ -127,95 +127,53 @@
 
 </main>
 
-<script src="app.js"></script>
-<script src="auth.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="/auth.js"></script>
 <script>
-  document.querySelector('[data-year]')?.textContent = new Date().getFullYear();
-  document.getElementById('today').textContent = new Date().toLocaleDateString('fr-FR');
+document.addEventListener("DOMContentLoaded", async function(){
 
-  const loginBlock = document.getElementById('loginBlock');
-  const dashBlock = document.getElementById('dashBlock');
-  const loginAlert = document.getElementById('loginAlert');
+  const state = document.getElementById("state");
+  const box = document.getElementById("box");
+  const nameEl = document.getElementById("name");
+  const mailEl = document.getElementById("mail");
+  const addrEl = document.getElementById("addr");
+  const phoneEl = document.getElementById("phone");
+  const logoutBtn = document.getElementById("logout");
 
-  async function loadMe(){
-    const r = await fetch('/api/me');
-    if(!r.ok) return null;
-    const data = await r.json().catch(() => null);
-    return data && data.user ? data.user : null;
+  try {
+    const response = await fetch("/api/me", {
+      credentials: "include"
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) throw new Error(data.error);
+
+    state.style.display = "none";
+    box.style.display = "block";
+
+    const u = data.user;
+
+    nameEl.textContent = u.first_name + " " + u.last_name;
+    mailEl.textContent = u.email;
+    addrEl.textContent = u.address + " — " + u.postal;
+    phoneEl.textContent = u.phone;
+
+  } catch (e) {
+    state.textContent = "Session expirée. Redirection…";
+    setTimeout(function(){
+      window.location.href = "/login.html";
+    }, 800);
   }
 
-  function showDash(user){
-    loginBlock.style.display = 'none';
-    dashBlock.style.display = 'block';
-    document.getElementById('hello').textContent = `Bonjour ${user.first_name} ${user.last_name}`;
-
-    // Charts (demo)
-    const valueCtx = document.getElementById('chartValue');
-    const allocCtx = document.getElementById('chartAlloc');
-    if(valueCtx && !valueCtx._chart){
-      valueCtx._chart = new Chart(valueCtx, {
-        type: 'line',
-        data: { labels: ['M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12'],
-          datasets: [{ label: 'Valeur (€)', data: [120000,120900,121700,122400,123200,124100,125000,126200,127100,128200,129700,130800], borderWidth: 3, tension: .35 }] },
-        options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: v => v.toLocaleString('fr-FR') + ' €' } } } }
-      });
-    }
-    if(allocCtx && !allocCtx._chart){
-      allocCtx._chart = new Chart(allocCtx, {
-        type: 'doughnut',
-        data: { labels: ['Grandes valeurs','Secteurs stratégiques','PME industrielles','Liquidités'],
-          datasets: [{ data: [45,30,15,10], borderWidth: 0 }] },
-        options: { plugins: { legend: { position: 'bottom' } } }
-      });
-    }
-  }
-
-  function showLogin(){
-    dashBlock.style.display = 'none';
-    loginBlock.style.display = 'block';
-  }
-
-  // Boot: if cookie exists -> /api/me ok
-  (async () => {
-    const me = await loadMe();
-    if(me) showDash(me);
-  })();
-
-  document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    FRANCE_AUTH.setAlert(loginAlert, '', '');
-    try{
-      await FRANCE_AUTH.api('/api/auth/login', {
-        email: document.getElementById('loginEmail').value.trim(),
-        password: document.getElementById('loginPass').value
-      });
-      const me = await loadMe();
-      if(me) return showDash(me);
-      FRANCE_AUTH.setAlert(loginAlert, 'Connexion ok, mais profil introuvable.', 'bad');
-    }catch(err){
-      FRANCE_AUTH.setAlert(loginAlert, err.message || 'Erreur', 'bad');
-    }
+  logoutBtn.addEventListener("click", async function(){
+    await fetch("/api/logout", {
+      method: "POST",
+      credentials: "include"
+    });
+    window.location.href = "/login.html";
   });
 
-  document.getElementById('logoutBtn').addEventListener('click', async () => {
-    try{ await FRANCE_AUTH.api('/api/auth/logout', {}); }catch(e){}
-    showLogin();
-  });
-
-  document.getElementById('forgotBtn').addEventListener('click', async () => {
-    const email = document.getElementById('loginEmail').value.trim();
-    if(!email){
-      FRANCE_AUTH.setAlert(loginAlert, 'Entrez votre email pour recevoir un lien de réinitialisation.', 'bad');
-      return;
-    }
-    try{
-      await FRANCE_AUTH.api('/api/auth/password-reset/request', { email });
-      FRANCE_AUTH.setAlert(loginAlert, 'Si cet email existe, un lien de réinitialisation a été envoyé (ou affiché en console serveur).', 'ok');
-    }catch(err){
-      FRANCE_AUTH.setAlert(loginAlert, err.message || 'Erreur', 'bad');
-    }
-  });
+});
 </script>
 
 </body>
