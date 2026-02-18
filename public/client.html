@@ -159,11 +159,13 @@ document.addEventListener("DOMContentLoaded", async function(){
     phoneEl.textContent = u.phone;
 
   } catch (e) {
+  if (state) {
     state.textContent = "Session expirée. Redirection…";
-    setTimeout(function(){
-      window.location.href = "/login.html";
-    }, 800);
   }
+  setTimeout(function(){
+    window.location.href = "/login.html";
+  }, 800);
+}
 
   logoutBtn.addEventListener("click", async function(){
     await fetch("/api/logout", {
