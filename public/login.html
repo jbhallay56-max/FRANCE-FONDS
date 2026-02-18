@@ -47,30 +47,46 @@
   </main>
 
   <script src="/auth.js"></script>
-  <script>
-  document.addEventListener("DOMContentLoaded", function(){
-    const email = document.getElementById("email");
-    const password = document.getElementById("password");
-    const btn = document.getElementById("btn");
-    const alertBox = document.getElementById("a");
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // On prend le 1er champ email + 1er champ password + 1er bouton du formulaire
+  const email = document.querySelector('input[type="email"]');
+  const password = document.querySelector('input[type="password"]');
+  const form = document.querySelector("form") || document.body;
+  const btn = form.querySelector("button") || document.querySelector("button");
+  const alertBox =
+    document.getElementById("a") ||
+    document.querySelector(".alert") ||
+    (() => {
+      const d = document.createElement("div");
+      d.className = "alert";
+      d.style.marginTop = "12px";
+      (btn?.parentElement || document.body).appendChild(d);
+      return d;
+    })();
 
-    const auth = window.FRANCE_AUTH;
-    if(!auth || !auth.api){
-      console.log("auth.js non chargé");
-      return;
-    }
-    const { api, setAlert } = auth;
+  // Si la page n'a pas les champs, on ne crash pas
+  if (!email || !password || !btn) return;
 
-    btn.addEventListener("click", async function(){
-      try{
-        setAlert(alertBox, "");
-        await api("/api/login", { email: email.value, password: password.value });
-        window.location.href = "/client.html";
-      }catch(e){
-        setAlert(alertBox, e.message, "err");
-      }
-    });
-  });
-  </script>
+  const auth = window.FRANCE_AUTH;
+  if (!auth || !auth.api) return;
+  const { api, setAlert } = auth;
+
+  async function doLogin(e){
+    e?.preventDefault?.();
+    try{
+      setAlert(alertBox, "");
+      await api("/api/login", { email: email.value, password: password.value });
+      window.location.href = "/client.html";
+    } catch(err){
+      setAlert(alertBox, err.message || "Erreur", "err");
+    }
+  }
+
+  // Clique bouton + Enter dans le form
+  btn.addEventListener("click", doLogin);
+  if (form && form.addEventListener) form.addEventListener("submit", doLogin);
+});
+</script>
 </body>
 </html>
