@@ -1,26 +1,76 @@
-<script src="/auth.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function(){
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>FRANCE — Connexion</title>
+  <link rel="stylesheet" href="/style.css"/>
+</head>
 
-  const email = document.getElementById("email");
-  const password = document.getElementById("password");
-  const btn = document.getElementById("btn");
-  const alertBox = document.getElementById("a");
+<body>
+  <main class="wrap">
+    <header class="top">
+      <a class="brand" href="/index.html">FRANCE</a>
+      <nav class="nav">
+        <a href="/index.html">Accueil</a>
+        <a href="/marche.html">Marché & chiffres</a>
+      </nav>
+    </header>
 
-  const { api, setAlert } = window.FRANCE_AUTH;
+    <section class="card">
+      <h1>Connexion</h1>
+      <p class="muted">Prototype fonctionnel : comptes réels (SQLite), mot de passe hashé, cookie JWT.</p>
 
-  btn.addEventListener("click", async function(){
-    try{
-      setAlert(alertBox, "");
-      await api("/api/login", {
-        email: email.value,
-        password: password.value
-      });
-      window.location.href = "/client.html";
-    } catch(e){
-      setAlert(alertBox, e.message, "err");
-    }
-  });
+      <div id="a" class="alert" style="display:none"></div>
 
-});
-</script>
+      <label class="field">
+        <span>Email</span>
+        <input id="email" type="email" placeholder="email@exemple.com" autocomplete="email"/>
+      </label>
+
+      <label class="field">
+        <span>Mot de passe</span>
+        <input id="password" type="password" placeholder="••••••••" autocomplete="current-password"/>
+      </label>
+
+      <div class="row">
+        <button id="btn" class="btn primary" type="button">Se connecter</button>
+      </div>
+
+      <div class="row between">
+        <a class="btn" href="/signup.html">Créer un compte</a>
+        <a class="btn" href="/forgot-password.html">Mot de passe oublié</a>
+      </div>
+
+      <p class="tiny muted">Si SMTP n’est pas configuré, le lien de reset s’affiche dans la console serveur.</p>
+    </section>
+  </main>
+
+  <script src="/auth.js"></script>
+  <script>
+  document.addEventListener("DOMContentLoaded", function(){
+    const email = document.getElementById("email");
+    const password = document.getElementById("password");
+    const btn = document.getElementById("btn");
+    const alertBox = document.getElementById("a");
+
+    const auth = window.FRANCE_AUTH;
+    if(!auth || !auth.api){
+      console.log("auth.js non chargé");
+      return;
+    }
+    const { api, setAlert } = auth;
+
+    btn.addEventListener("click", async function(){
+      try{
+        setAlert(alertBox, "");
+        await api("/api/login", { email: email.value, password: password.value });
+        window.location.href = "/client.html";
+      }catch(e){
+        setAlert(alertBox, e.message, "err");
+      }
+    });
+  });
+  </script>
+</body>
+</html>
